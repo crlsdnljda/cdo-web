@@ -191,6 +191,21 @@ add_action( 'widgets_init', 'cdo_widgets' );
 add_filter( 'show_admin_bar', '__return_false' );
 
 /**
+ * Cache-buster del favicon — añade ?v=<modtime> a las URLs del site_icon.
+ * Evita que el navegador siga sirviendo un favicon antiguo (o el 404 cacheado
+ * de cuando la web no tenía favicon todavía).
+ */
+function cdo_favicon_cache_buster( $url ) {
+    if ( ! $url ) { return $url; }
+    $icon_id = (int) get_option( 'site_icon' );
+    if ( ! $icon_id ) { return $url; }
+    $file = get_attached_file( $icon_id );
+    $v    = ( $file && file_exists( $file ) ) ? filemtime( $file ) : ( get_post_modified_time( 'U', false, $icon_id ) ?: '1' );
+    return add_query_arg( 'v', $v, $url );
+}
+add_filter( 'site_icon_url', 'cdo_favicon_cache_buster', 99 );
+
+/**
  * Helper: render an inline Material Symbols Outlined icon.
  */
 function cdo_icon( $name, $classes = '' ) {
