@@ -195,7 +195,9 @@ function cdo_localbusiness_schema() {
             array( '@type' => 'AdministrativeArea', 'name' => 'Álava' ),
         );
         $region    = 'País Vasco';
-        $business  = 'DeliveryService';
+        // Schema.org no tiene "DeliveryService" como tipo; LocalBusiness
+        // es el tipo válido más cercano para un negocio local de transporte.
+        $business  = 'LocalBusiness';
     }
 
     $data = array(
