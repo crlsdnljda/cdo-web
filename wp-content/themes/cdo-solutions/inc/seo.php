@@ -276,3 +276,70 @@ function cdo_excerpt_length( $length ) {
     return 28;
 }
 add_filter( 'excerpt_length', 'cdo_excerpt_length' );
+
+/* ---------- Sitemap: limpiar contenido sensible o irrelevante ---------- */
+
+/**
+ * Excluir el provider de "users" del sitemap (no queremos exponer la URL de los
+ * autores — revela el username del admin y es ruido para SEO).
+ */
+function cdo_sitemap_remove_users( $provider, $name ) {
+    if ( 'users' === $name ) { return false; }
+    return $provider;
+}
+add_filter( 'wp_sitemaps_add_provider', 'cdo_sitemap_remove_users', 10, 2 );
+
+/**
+ * Excluir CPTs internos del sitemap (consultas del formulario son privadas).
+ */
+function cdo_sitemap_filter_post_types( $post_types ) {
+    unset( $post_types['cdo_contact_msg'] );
+    return $post_types;
+}
+add_filter( 'wp_sitemaps_post_types', 'cdo_sitemap_filter_post_types' );
+
+/**
+ * Excluir páginas del catálogo de WP que vinieron en el dump y no aportan SEO
+ * ("Página de ejemplo", "Personalizar Cookies" — esta última es funcional, no SEO).
+ */
+function cdo_sitemap_exclude_pages( $args, $post_type ) {
+    if ( 'page' !== $post_type ) { return $args; }
+    $exclude_slugs = array( 'pagina-ejemplo', 'personalizar-cookies' );
+    $exclude_ids   = array();
+    foreach ( $exclude_slugs as $slug ) {
+        $page = get_page_by_path( $slug );
+        if ( $page ) { $exclude_ids[] = (int) $page->ID; }
+    }
+    if ( $exclude_ids ) {
+        $args['post__not_in'] = isset( $args['post__not_in'] )
+            ? array_merge( (array) $args['post__not_in'], $exclude_ids )
+            : $exclude_ids;
+    }
+    return $args;
+}
+add_filter( 'wp_sitemaps_posts_query_args', 'cdo_sitemap_exclude_pages', 10, 2 );
+
+/* ---------- Robots.txt enriquecido ---------- */
+
+function cdo_robots_txt( $output, $public ) {
+    if ( ! $public ) { return $output; } // si blog_public=0, mantener el "Disallow: /"
+
+    $sitemap = esc_url_raw( home_url( '/wp-sitemap.xml' ) );
+    $output  = "User-agent: *\n";
+    $output .= "Disallow: /wp-admin/\n";
+    $output .= "Disallow: /wp-login.php\n";
+    $output .= "Disallow: /xmlrpc.php\n";
+    $output .= "Disallow: /?s=\n";
+    $output .= "Disallow: /search/\n";
+    $output .= "Disallow: /wp-content/plugins/\n";
+    $output .= "Disallow: /wp-content/cache/\n";
+    $output .= "Disallow: /readme.html\n";
+    $output .= "Disallow: /license.txt\n";
+    $output .= "Allow: /wp-admin/admin-ajax.php\n";
+    $output .= "Allow: /wp-content/uploads/\n";
+    $output .= "\n";
+    $output .= "Sitemap: {$sitemap}\n";
+
+    return $output;
+}
+add_filter( 'robots_txt', 'cdo_robots_txt', 10, 2 );
