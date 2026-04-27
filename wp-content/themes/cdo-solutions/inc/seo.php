@@ -299,8 +299,13 @@ function cdo_sitemap_filter_post_types( $post_types ) {
 add_filter( 'wp_sitemaps_post_types', 'cdo_sitemap_filter_post_types' );
 
 /**
- * Excluir páginas del catálogo de WP que vinieron en el dump y no aportan SEO
- * ("Página de ejemplo", "Personalizar Cookies" — esta última es funcional, no SEO).
+ * Reescribe la lista de páginas excluidas del sitemap.
+ *
+ * Adapta RGPD (prio 10) excluye Aviso Legal porque tiene `avisolegalID = 16`
+ * registrado y `robots-index = 0`. Eso es indeseado: el Aviso Legal tiene
+ * contenido propio y queremos que Google lo descubra. Corremos a prio 20
+ * (después del plugin) y forzamos la lista a SOLO las páginas que de verdad
+ * no aportan nada al SEO.
  */
 function cdo_sitemap_exclude_pages( $args, $post_type ) {
     if ( 'page' !== $post_type ) { return $args; }
@@ -310,14 +315,10 @@ function cdo_sitemap_exclude_pages( $args, $post_type ) {
         $page = get_page_by_path( $slug );
         if ( $page ) { $exclude_ids[] = (int) $page->ID; }
     }
-    if ( $exclude_ids ) {
-        $args['post__not_in'] = isset( $args['post__not_in'] )
-            ? array_merge( (array) $args['post__not_in'], $exclude_ids )
-            : $exclude_ids;
-    }
+    $args['post__not_in'] = $exclude_ids;
     return $args;
 }
-add_filter( 'wp_sitemaps_posts_query_args', 'cdo_sitemap_exclude_pages', 10, 2 );
+add_filter( 'wp_sitemaps_posts_query_args', 'cdo_sitemap_exclude_pages', 20, 2 );
 
 /* ---------- Robots.txt enriquecido ---------- */
 
