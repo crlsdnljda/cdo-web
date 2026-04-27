@@ -421,14 +421,13 @@ function cdo_software_jsonld_data( $product, $page_url ) {
         'operatingSystem'     => 'Web, Linux, Windows, Android',
         'url'                 => $product_url,
         'inLanguage'          => 'es',
-        'brand'               => array(
-            '@type' => 'Brand',
-            'name'  => 'cdo.solutions',
-        ),
-        'provider'            => array(
+        // SoftwareApplication hereda de CreativeWork, no de Product:
+        // `brand` no es válido aquí, pero `publisher` sí.
+        'publisher'           => array(
             '@type' => 'Organization',
             'name'  => 'cdo.solutions',
             'url'   => home_url( '/' ),
+            '@id'   => home_url( '/#organization' ),
         ),
     );
 
