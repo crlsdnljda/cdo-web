@@ -98,4 +98,10 @@ function cdo_admin_ip_restrict() {
     wp_safe_redirect( home_url( '/' ), 302 );
     exit;
 }
-add_action( 'plugins_loaded', 'cdo_admin_ip_restrict', 1 );
+// IMPORTANTE: usamos 'after_setup_theme' priority 1 (el primer hook que se
+// dispara DESPUÉS de cargar functions.php del tema). 'plugins_loaded' no
+// vale porque ya pasó cuando este archivo se incluye desde functions.php.
+add_action( 'after_setup_theme', 'cdo_admin_ip_restrict', 1 );
+
+// Por seguridad extra, también registramos en 'init' por si algo se cuela
+add_action( 'init', 'cdo_admin_ip_restrict', 1 );
