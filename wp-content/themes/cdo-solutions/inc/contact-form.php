@@ -99,6 +99,38 @@ function cdo_handle_contact_form() {
         exit;
     }
 
+    // reCAPTCHA v3 — solo si la secret key está configurada.
+    // Score < 0.5 → muy probable bot. Si Google no responde, dejamos pasar
+    // (fail-open) para no romper el form si su servicio cae.
+    $recaptcha_secret = defined( 'CDO_RECAPTCHA_SECRET_KEY' ) ? (string) CDO_RECAPTCHA_SECRET_KEY : '';
+    if ( '' !== $recaptcha_secret ) {
+        $token = isset( $_POST['cdo_recaptcha_token'] ) ? sanitize_text_field( wp_unslash( $_POST['cdo_recaptcha_token'] ) ) : '';
+        if ( '' === $token ) {
+            wp_safe_redirect( add_query_arg( 'cdo_msg', 'sent', $back ) );
+            exit;
+        }
+        $resp = wp_remote_post( 'https://www.google.com/recaptcha/api/siteverify', array(
+            'timeout' => 8,
+            'body'    => array(
+                'secret'   => $recaptcha_secret,
+                'response' => $token,
+                'remoteip' => cdo_contact_client_ip(),
+            ),
+        ) );
+        if ( ! is_wp_error( $resp ) ) {
+            $data  = json_decode( wp_remote_retrieve_body( $resp ), true );
+            $ok    = ! empty( $data['success'] );
+            $score = isset( $data['score'] ) ? (float) $data['score'] : 0.0;
+            $action_ok = ! isset( $data['action'] ) || 'cdo_contact' === $data['action'];
+            if ( ! $ok || ! $action_ok || $score < 0.5 ) {
+                // Bot — fingimos éxito y descartamos sin guardar
+                wp_safe_redirect( add_query_arg( 'cdo_msg', 'sent', $back ) );
+                exit;
+            }
+        }
+        // is_wp_error ⇒ fail-open: dejamos seguir (Google caído ≠ bot)
+    }
+
     // Recoger + sanear
     $name    = sanitize_text_field( wp_unslash( $_POST['cdo_name']    ?? '' ) );
     $email   = sanitize_email(      wp_unslash( $_POST['cdo_email']   ?? '' ) );

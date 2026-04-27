@@ -62,10 +62,16 @@ get_header();
 
                 <?php echo function_exists( 'cdo_contact_form_notice' ) ? cdo_contact_form_notice() : ''; ?>
 
-                <form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post" class="space-y-5 md:space-y-6">
+                <?php
+                $cdo_recaptcha_site = defined( 'CDO_RECAPTCHA_SITE_KEY' ) ? (string) CDO_RECAPTCHA_SITE_KEY : '';
+                ?>
+                <form id="cdo-contact-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post" class="space-y-5 md:space-y-6">
                     <input type="hidden" name="action" value="cdo_contact_form" />
                     <?php wp_nonce_field( 'cdo_contact', 'cdo_contact_nonce' ); ?>
                     <input type="text" name="cdo_website" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;top:-9999px;height:0;width:0;opacity:0;" aria-hidden="true" />
+                    <?php if ( '' !== $cdo_recaptcha_site ) : ?>
+                        <input type="hidden" name="cdo_recaptcha_token" id="cdo-recaptcha-token" value="" />
+                    <?php endif; ?>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                         <label class="block">
@@ -132,7 +138,54 @@ get_header();
                         <?php esc_html_e( 'Enviar mensaje', 'cdo-solutions' ); ?>
                         <span class="material-symbols-outlined" aria-hidden="true">arrow_right_alt</span>
                     </button>
+
+                    <?php if ( '' !== $cdo_recaptcha_site ) : ?>
+                        <p class="text-[11px] text-secondary leading-relaxed">
+                            <?php
+                            printf(
+                                /* translators: 1: link to Google Privacy, 2: link to Google ToS */
+                                esc_html__( 'Este sitio está protegido por reCAPTCHA y se aplican la %1$s y los %2$s de Google.', 'cdo-solutions' ),
+                                '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="underline hover:text-primary">' . esc_html__( 'Política de Privacidad', 'cdo-solutions' ) . '</a>',
+                                '<a href="https://policies.google.com/terms"   target="_blank" rel="noopener" class="underline hover:text-primary">' . esc_html__( 'Términos del Servicio', 'cdo-solutions' ) . '</a>'
+                            );
+                            ?>
+                        </p>
+                    <?php endif; ?>
                 </form>
+
+                <?php if ( '' !== $cdo_recaptcha_site ) : ?>
+                    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo esc_attr( $cdo_recaptcha_site ); ?>"></script>
+                    <script>
+                    (function(){
+                        var form = document.getElementById('cdo-contact-form');
+                        var tokenInput = document.getElementById('cdo-recaptcha-token');
+                        if ( !form || !tokenInput || typeof grecaptcha === 'undefined' ) { return; }
+
+                        var submitting = false;
+                        form.addEventListener('submit', function(e){
+                            if ( submitting ) { return; }
+                            e.preventDefault();
+                            submitting = true;
+                            grecaptcha.ready(function(){
+                                grecaptcha.execute(<?php echo wp_json_encode( $cdo_recaptcha_site ); ?>, { action: 'cdo_contact' })
+                                    .then(function(token){
+                                        tokenInput.value = token;
+                                        form.submit();
+                                    })
+                                    .catch(function(){
+                                        // Si reCAPTCHA falla, dejamos enviar el form de todas formas;
+                                        // el backend hace fail-open y aplica el resto de validaciones.
+                                        form.submit();
+                                    });
+                            });
+                        });
+                    })();
+                    </script>
+                    <style>
+                        /* El badge flotante de reCAPTCHA estorba con el banner de cookies y el botón flotante */
+                        .grecaptcha-badge { visibility: hidden; }
+                    </style>
+                <?php endif; ?>
             </div>
         </div>
 
