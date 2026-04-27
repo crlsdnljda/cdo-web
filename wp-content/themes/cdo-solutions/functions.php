@@ -203,7 +203,7 @@ function cdo_favicon_cache_buster( $url ) {
     $v    = ( $file && file_exists( $file ) ) ? filemtime( $file ) : ( get_post_modified_time( 'U', false, $icon_id ) ?: '1' );
     return add_query_arg( 'v', $v, $url );
 }
-add_filter( 'site_icon_url', 'cdo_favicon_cache_buster', 99 );
+add_filter( 'get_site_icon_url', 'cdo_favicon_cache_buster', 99 );
 
 /**
  * Helper: render an inline Material Symbols Outlined icon.
