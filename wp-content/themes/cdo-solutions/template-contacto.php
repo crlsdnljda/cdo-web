@@ -103,14 +103,13 @@ get_header();
                         <span class="text-xs font-bold uppercase tracking-widest text-secondary mb-2 block"><?php esc_html_e( '¿Qué necesitas?', 'cdo-solutions' ); ?></span>
                         <select name="cdo_topic"
                                 class="w-full px-4 py-3 rounded-lg bg-surface-container-low border border-transparent focus:bg-surface-container-lowest focus:border-primary focus:outline-none transition-all text-on-surface">
-                            <option value=""><?php esc_html_e( '— Selecciona un área —', 'cdo-solutions' ); ?></option>
-                            <option value="desarrollo-web"><?php esc_html_e( 'Desarrollo Web y Automatización', 'cdo-solutions' ); ?></option>
-                            <option value="marketing"><?php esc_html_e( 'Marketing Digital y Comunicación', 'cdo-solutions' ); ?></option>
-                            <option value="ecommerce"><?php esc_html_e( 'E-commerce y Gestión de Envíos', 'cdo-solutions' ); ?></option>
-                            <option value="diseno"><?php esc_html_e( 'Diseño Gráfico y Creatividad', 'cdo-solutions' ); ?></option>
-                            <option value="soporte"><?php esc_html_e( 'Soporte y Consultoría Técnica', 'cdo-solutions' ); ?></option>
-                            <option value="software"><?php esc_html_e( 'Software', 'cdo-solutions' ); ?></option>
-                            <option value="otro"><?php esc_html_e( 'Otro / no estoy seguro', 'cdo-solutions' ); ?></option>
+                            <option value=""><?php esc_html_e( '— Elige un área —', 'cdo-solutions' ); ?></option>
+                            <option value="soporte-ecommerce"><?php esc_html_e( 'Soporte e‑commerce', 'cdo-solutions' ); ?></option>
+                            <option value="transporte"><?php esc_html_e( 'Transporte (País Vasco)', 'cdo-solutions' ); ?></option>
+                            <option value="mantenimiento"><?php esc_html_e( 'Mantenimiento informático (Gipuzkoa)', 'cdo-solutions' ); ?></option>
+                            <option value="software"><?php esc_html_e( 'Software (cdo.mail · cdo.chat · cdo.screen)', 'cdo-solutions' ); ?></option>
+                            <option value="saas-medida"><?php esc_html_e( 'SaaS a medida', 'cdo-solutions' ); ?></option>
+                            <option value="otro"><?php esc_html_e( 'Otra cosa', 'cdo-solutions' ); ?></option>
                         </select>
                     </label>
 
