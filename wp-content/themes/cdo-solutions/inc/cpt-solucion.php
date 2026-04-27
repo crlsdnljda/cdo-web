@@ -339,6 +339,7 @@ function cdo_solucion_jsonld_single( $cat, $cat_url ) {
     $bc = array(
         '@context'        => 'https://schema.org',
         '@type'           => 'BreadcrumbList',
+        'inLanguage'      => 'es',
         'itemListElement' => array(
             array( '@type' => 'ListItem', 'position' => 1, 'name' => __( 'Inicio',     'cdo-solutions' ), 'item' => home_url( '/' ) ),
             array( '@type' => 'ListItem', 'position' => 2, 'name' => __( 'Soluciones', 'cdo-solutions' ), 'item' => $catalog_url ),

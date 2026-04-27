@@ -207,6 +207,7 @@ function cdo_localbusiness_schema() {
         'name'        => 'cdo.solutions — ' . $name,
         'description' => $description,
         'url'         => get_permalink(),
+        'inLanguage'  => 'es',
         'image'       => has_post_thumbnail() ? get_the_post_thumbnail_url( get_post(), 'large' ) : '',
         'priceRange'  => '€€',
         'address'     => array(
@@ -270,6 +271,7 @@ function cdo_faq_schema() {
     $data = array(
         '@context'   => 'https://schema.org',
         '@type'      => 'FAQPage',
+        'inLanguage' => 'es',
         'mainEntity' => $items,
     );
 
