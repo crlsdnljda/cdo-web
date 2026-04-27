@@ -18,6 +18,7 @@ require_once get_template_directory() . '/inc/cpt-software.php';
 require_once get_template_directory() . '/inc/cpt-solucion.php';
 require_once get_template_directory() . '/inc/contact-form.php';
 require_once get_template_directory() . '/inc/seo.php';
+require_once get_template_directory() . '/inc/admin-restrict.php';
 
 /**
  * Theme support + menus.
