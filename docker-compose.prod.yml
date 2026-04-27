@@ -58,6 +58,15 @@ services:
       # Vacíos = el captcha se desactiva (form sigue funcionando solo con honeypot).
       CDO_RECAPTCHA_SITE_KEY:   ${CDO_RECAPTCHA_SITE_KEY:-}
       CDO_RECAPTCHA_SECRET_KEY: ${CDO_RECAPTCHA_SECRET_KEY:-}
+      # SMTP (Mailcow self-hosted) — wp_mail() saldrá por aquí si está configurado.
+      # Si CDO_SMTP_HOST está vacío, WP usa el mail() nativo de PHP (no fiable).
+      CDO_SMTP_HOST:       ${CDO_SMTP_HOST:-}
+      CDO_SMTP_PORT:       ${CDO_SMTP_PORT:-465}
+      CDO_SMTP_USER:       ${CDO_SMTP_USER:-}
+      CDO_SMTP_PASS:       ${CDO_SMTP_PASS:-}
+      CDO_SMTP_ENCRYPTION: ${CDO_SMTP_ENCRYPTION:-ssl}
+      CDO_SMTP_FROM:       ${CDO_SMTP_FROM:-}
+      CDO_SMTP_FROM_NAME:  ${CDO_SMTP_FROM_NAME:-CDO Solutions}
       WORDPRESS_CONFIG_EXTRA: |
         define( 'WP_DEBUG_DISPLAY', false );
         define( 'WP_DEBUG_LOG',     true );
@@ -69,6 +78,13 @@ services:
         define( 'CDO_GTM_ID',                getenv( 'CDO_GTM_ID' )                ?: '' );
         define( 'CDO_RECAPTCHA_SITE_KEY',    getenv( 'CDO_RECAPTCHA_SITE_KEY' )    ?: '' );
         define( 'CDO_RECAPTCHA_SECRET_KEY',  getenv( 'CDO_RECAPTCHA_SECRET_KEY' )  ?: '' );
+        define( 'CDO_SMTP_HOST',             getenv( 'CDO_SMTP_HOST' )             ?: '' );
+        define( 'CDO_SMTP_PORT',       (int) ( getenv( 'CDO_SMTP_PORT' )           ?: 465 ) );
+        define( 'CDO_SMTP_USER',             getenv( 'CDO_SMTP_USER' )             ?: '' );
+        define( 'CDO_SMTP_PASS',             getenv( 'CDO_SMTP_PASS' )             ?: '' );
+        define( 'CDO_SMTP_ENCRYPTION',       getenv( 'CDO_SMTP_ENCRYPTION' )       ?: 'ssl' );
+        define( 'CDO_SMTP_FROM',             getenv( 'CDO_SMTP_FROM' )             ?: '' );
+        define( 'CDO_SMTP_FROM_NAME',        getenv( 'CDO_SMTP_FROM_NAME' )        ?: 'CDO Solutions' );
         // URLs dinámicas — funciona con cualquier dominio detrás de Traefik
         if ( ! defined( 'WP_HOME' ) && ! empty( $$_SERVER['HTTP_HOST'] ) ) {
             $$proto = ( ! empty( $$_SERVER['HTTPS'] ) && $$_SERVER['HTTPS'] !== 'off' ) ? 'https' : 'http';
