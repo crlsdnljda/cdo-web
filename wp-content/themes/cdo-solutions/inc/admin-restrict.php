@@ -80,21 +80,40 @@ function cdo_request_needs_admin_protection() {
 function cdo_admin_ip_restrict() {
     if ( ! cdo_request_needs_admin_protection() ) { return; }
 
-    // Lista permitida (vacía → no restringimos, evita lock-out accidental)
-    $raw = defined( 'CDO_ADMIN_ALLOWED_IPS' ) ? (string) CDO_ADMIN_ALLOWED_IPS : '';
-    if ( '' === trim( $raw ) ) { return; }
-
-    $allowed = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
-    if ( empty( $allowed ) ) { return; }
-
-    $client_ip = cdo_get_client_ip();
-    foreach ( $allowed as $rule ) {
-        if ( cdo_ip_matches( $client_ip, $rule ) ) {
-            return; // IP permitida — pasa a wp-admin
+    // ----- 1. Bypass por token secreto (cookie de 1 año) -----
+    // Útil cuando el proxy no pasa la IP real, o cuando viajas / cambia tu red.
+    // URL de activación: https://cdo.solutions/wp-admin/?cdo_key=TU_TOKEN
+    $token = defined( 'CDO_ADMIN_TOKEN' ) ? (string) CDO_ADMIN_TOKEN : '';
+    if ( '' !== $token ) {
+        // Cookie ya presente y válida → pasa
+        if ( ! empty( $_COOKIE['cdo_admin_key'] ) && hash_equals( $token, (string) $_COOKIE['cdo_admin_key'] ) ) {
+            return;
+        }
+        // Token vía URL → setea cookie y permite
+        if ( ! empty( $_GET['cdo_key'] ) && hash_equals( $token, (string) $_GET['cdo_key'] ) ) {
+            setcookie( 'cdo_admin_key', $token, time() + YEAR_IN_SECONDS, '/', '', is_ssl(), true );
+            return;
         }
     }
 
-    // No permitida — redirect 302 a la home, sin filtración de info
+    // ----- 2. Lista de IPs permitidas (CDO_ADMIN_ALLOWED_IPS) -----
+    $raw = defined( 'CDO_ADMIN_ALLOWED_IPS' ) ? (string) CDO_ADMIN_ALLOWED_IPS : '';
+    if ( '' !== trim( $raw ) ) {
+        $allowed = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+        if ( ! empty( $allowed ) ) {
+            $client_ip = cdo_get_client_ip();
+            foreach ( $allowed as $rule ) {
+                if ( cdo_ip_matches( $client_ip, $rule ) ) {
+                    return; // IP permitida
+                }
+            }
+        }
+    }
+
+    // ----- 3. Si no hay ni token ni IPs configuradas → fail-open -----
+    if ( '' === $token && '' === trim( $raw ) ) { return; }
+
+    // Bloqueado — redirect 302 a la home, sin filtración de info
     wp_safe_redirect( home_url( '/' ), 302 );
     exit;
 }
