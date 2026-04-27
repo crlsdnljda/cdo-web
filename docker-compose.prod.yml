@@ -1,0 +1,82 @@
+# ===========================================================================
+# CDO Solutions — Compose para producción (EasyPanel).
+# - Sin puertos expuestos (EasyPanel/Traefik enruta vía dominio).
+# - Volúmenes nombrados para persistencia.
+# - Tema cdo-solutions bind-mount desde el repo (deploys = git pull + restart).
+# - Apache override montado para AllowOverride All (.htaccess).
+# - WP_HOME / WP_SITEURL dinámicos según HTTP_HOST → funciona con cualquier
+#   dominio sin reconfigurar.
+# ===========================================================================
+
+services:
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - cdo_db:/var/lib/mysql
+    networks:
+      - cdo_internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  wordpress:
+    image: wordpress:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_TABLE_PREFIX: wp_
+      WORDPRESS_DEBUG: 0
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'WP_DEBUG_DISPLAY', false );
+        define( 'WP_DEBUG_LOG',     true );
+        @ini_set( 'display_errors', 0 );
+        error_reporting( E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED & ~E_STRICT );
+        // URLs dinámicas — funciona con cualquier dominio detrás de Traefik
+        if ( ! defined( 'WP_HOME' ) && ! empty( $$_SERVER['HTTP_HOST'] ) ) {
+            $$proto = ( ! empty( $$_SERVER['HTTPS'] ) && $$_SERVER['HTTPS'] !== 'off' ) ? 'https' : 'http';
+            // Confiar en el header X-Forwarded-Proto que mete Traefik
+            if ( ! empty( $$_SERVER['HTTP_X_FORWARDED_PROTO'] ) ) {
+                $$proto = $$_SERVER['HTTP_X_FORWARDED_PROTO'];
+            }
+            define( 'WP_HOME',    $$proto . '://' . $$_SERVER['HTTP_HOST'] );
+            define( 'WP_SITEURL', $$proto . '://' . $$_SERVER['HTTP_HOST'] );
+        }
+        // Confiar en proxies (Traefik) para HTTPS detection
+        if ( ! empty( $$_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ) {
+            $$_SERVER['HTTPS'] = 'on';
+        }
+    volumes:
+      - cdo_wp_data:/var/www/html
+      # El tema vive en el repo — git pull + restart del servicio = deploy
+      - ./wp-content/themes/cdo-solutions:/var/www/html/wp-content/themes/cdo-solutions:ro
+      # AllowOverride All para que .htaccess (permalinks) funcione
+      - ./apache-override.conf:/etc/apache2/conf-enabled/zz-cdo-overrides.conf:ro
+      # Dump de la BD inicial accesible para importarlo en el primer deploy
+      - ./db:/var/www/html/db:ro
+    networks:
+      - cdo_internal
+
+volumes:
+  cdo_db:
+  cdo_wp_data:
+
+networks:
+  cdo_internal:
+    driver: bridge

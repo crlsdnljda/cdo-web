@@ -1,0 +1,921 @@
+/*
+Theme Name: CDO Solutions
+Theme URI: https://cdo.solutions
+Author: Carlos Daniel Ojeda
+Author URI: https://cdo.solutions
+Description: Tema corporativo para cdo.solutions — Centro de Desarrollo Online. Sistema de diseño "Architectural Vitality": chasis blanco con bursts de color y vitalidad 3D. Soluciones integrales para vender online.
+Version: 1.0.0
+Requires at least: 6.0
+Tested up to: 6.7
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: cdo-solutions
+Tags: business, corporate, ecommerce, custom-colors, custom-menu, featured-images, threaded-comments
+*/
+
+/* ----------------------------------------------------------------
+   Architectural Vitality — Design tokens (CSS variables)
+   Mirror of Tailwind theme tokens for any non-utility usage.
+---------------------------------------------------------------- */
+:root {
+    --cdo-surface-lowest: #FFFFFF;
+    --cdo-surface: #F7F9FD;
+    --cdo-surface-low: #F2F4F8;
+    --cdo-surface-high: #E6E8EC;
+    --cdo-surface-highest: #E0E2E6;
+
+    --cdo-on-surface: #191C1F;
+    --cdo-on-surface-variant: #454935;
+    --cdo-secondary: #5E5E5E;
+    --cdo-outline: #757963;
+    --cdo-outline-variant: #C5C9AF;
+
+    --cdo-primary: #536600;
+    --cdo-primary-container: #D8FD50;
+    --cdo-on-primary-fixed: #171E00;
+
+    --cdo-tertiary: #B4136D;
+    --cdo-tertiary-fixed: #FFD9E4;
+    --cdo-tertiary-fixed-dim: #FFB0CD;
+}
+
+/* ----------------------------------------------------------------
+   Glassmorphism + base animations
+---------------------------------------------------------------- */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.marquee-animation {
+    animation: cdo-scroll 80s linear infinite;
+}
+
+@keyframes cdo-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* ----------------------------------------------------------------
+   Reveal-on-scroll system
+   Hooked by [data-cdo-reveal]; the JS adds .is-revealed when visible.
+   Variants: up (default), left, right, scale, fade.
+---------------------------------------------------------------- */
+[data-cdo-reveal] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+[data-cdo-reveal="left"]  { transform: translateX(-32px); }
+[data-cdo-reveal="right"] { transform: translateX(32px); }
+[data-cdo-reveal="scale"] { transform: scale(0.94); }
+[data-cdo-reveal="fade"]  { transform: none; }
+
+[data-cdo-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+}
+
+[data-cdo-delay="100"]  { transition-delay: 100ms; }
+[data-cdo-delay="200"]  { transition-delay: 200ms; }
+[data-cdo-delay="300"]  { transition-delay: 300ms; }
+[data-cdo-delay="400"]  { transition-delay: 400ms; }
+[data-cdo-delay="500"]  { transition-delay: 500ms; }
+[data-cdo-delay="600"]  { transition-delay: 600ms; }
+
+/* ----------------------------------------------------------------
+   Animated chart bars
+---------------------------------------------------------------- */
+[data-cdo-bar] {
+    transition: height 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ----------------------------------------------------------------
+   Floating background blobs — slow drift
+---------------------------------------------------------------- */
+.cdo-blob {
+    animation: cdo-drift 18s ease-in-out infinite alternate;
+    will-change: transform;
+}
+.cdo-blob--slow { animation-duration: 26s; }
+.cdo-blob--rev  { animation-direction: alternate-reverse; }
+
+@keyframes cdo-drift {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(30px, -20px) scale(1.05); }
+    100% { transform: translate(-20px, 25px) scale(0.97); }
+}
+
+/* ----------------------------------------------------------------
+   Floating cards + soft pulse
+---------------------------------------------------------------- */
+.cdo-float {
+    animation: cdo-float 6s ease-in-out infinite;
+}
+.cdo-float--rev { animation-direction: reverse; }
+
+@keyframes cdo-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+}
+
+.cdo-pulse-dot {
+    animation: cdo-pulse-dot 1.6s ease-in-out infinite;
+}
+@keyframes cdo-pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(216, 253, 80, 0.7); }
+    50%      { box-shadow: 0 0 0 10px rgba(216, 253, 80, 0); }
+}
+
+/* ----------------------------------------------------------------
+   Gradient shift — for the lime "vender" highlight + CTA underline
+---------------------------------------------------------------- */
+.cdo-gradient-shift {
+    background-size: 200% 200%;
+    animation: cdo-gradient-shift 7s ease infinite;
+}
+@keyframes cdo-gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+
+/* ----------------------------------------------------------------
+   Sticky nav — explicit rules so it works even if Tailwind utilities
+   don't apply (defensive: the Tailwind CDN can be slow on first paint).
+---------------------------------------------------------------- */
+.cdo-topnav {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 50;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease, padding 0.25s ease;
+}
+.cdo-topnav.is-scrolled {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
+
+/* ----------------------------------------------------------------
+   Dropdown del nav (desktop)
+   - Visible al hacer hover sobre el item padre
+   - Fade + slide suave
+   - El padding-top del wrapper crea un puente para no perder el hover
+     entre el link padre y el menú hijo
+---------------------------------------------------------------- */
+.cdo-nav-submenu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 60;
+}
+.cdo-nav-item:hover > .cdo-nav-submenu,
+.cdo-nav-item:focus-within > .cdo-nav-submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.cdo-nav-chevron {
+    transition: transform 0.2s ease;
+}
+.cdo-nav-item:hover .cdo-nav-chevron,
+.cdo-nav-item:focus-within .cdo-nav-chevron {
+    transform: rotate(180deg);
+}
+
+/* ----------------------------------------------------------------
+   Mobile menu overlay
+---------------------------------------------------------------- */
+.cdo-mobile-menu {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 49;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 5rem 2rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.cdo-mobile-menu.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+}
+.cdo-mobile-menu a {
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.75rem, 8vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.cdo-mobile-menu a:hover,
+.cdo-mobile-menu a:focus { color: #D8FD50; transform: translateX(6px); }
+
+/* Mobile: grupos con submenú (<details>) */
+.cdo-mobile-menu .cdo-mobile-group {
+    width: 100%;
+    max-width: 320px;
+}
+.cdo-mobile-menu .cdo-mobile-group-summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.5rem, 7vw, 2.5rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    transition: color 0.2s ease;
+}
+.cdo-mobile-menu .cdo-mobile-group-summary::-webkit-details-marker { display: none; }
+.cdo-mobile-menu .cdo-mobile-group-summary:hover { color: #D8FD50; }
+.cdo-mobile-menu .cdo-mobile-group-chevron {
+    font-size: 1.5em !important;
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.25s ease;
+}
+.cdo-mobile-menu .cdo-mobile-group[open] .cdo-mobile-group-chevron {
+    transform: rotate(180deg);
+    color: #D8FD50;
+}
+.cdo-mobile-menu .cdo-mobile-group-children {
+    margin-top: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    text-align: center;
+}
+.cdo-mobile-menu .cdo-mobile-group-children a {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    padding: .5rem 1rem;
+    border-radius: .5rem;
+    transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.cdo-mobile-menu .cdo-mobile-group-children a:hover,
+.cdo-mobile-menu .cdo-mobile-group-children a:focus {
+    color: #D8FD50 !important;
+    background: rgba(216, 253, 80, 0.08);
+    transform: none;
+}
+.cdo-mobile-menu .cdo-mobile-group-parent {
+    color: rgba(216, 253, 80, 0.85) !important;
+    font-size: .8rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: .4rem 0 !important;
+}
+
+.cdo-mobile-menu .cdo-mobile-login {
+    margin-top: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-size: 1rem !important;
+    padding: .75rem 1.75rem;
+    border-radius: .75rem;
+}
+.cdo-mobile-menu .cdo-mobile-login:hover {
+    color: #D8FD50;
+    border-color: #D8FD50;
+    transform: translateX(0) scale(1.03);
+}
+.cdo-mobile-menu .cdo-mobile-login .material-symbols-outlined { font-size: 1.25rem; }
+
+.cdo-mobile-menu .cdo-mobile-cta {
+    margin-top: .5rem;
+    background: #D8FD50;
+    color: #171E00;
+    font-size: 1rem !important;
+    padding: .9rem 2rem;
+    border-radius: .75rem;
+}
+.cdo-mobile-menu .cdo-mobile-cta:hover { color: #171E00; transform: scale(1.04); }
+
+/* ----------------------------------------------------------------
+   Service cards — extra hover lift (over Tailwind)
+---------------------------------------------------------------- */
+.cdo-service-card {
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+.cdo-service-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 40px -22px rgba(25, 28, 31, 0.2);
+}
+
+/* ----------------------------------------------------------------
+   Headline word-break: prevent ugly hyphen splits like
+   "e-" + "commerce" or "auto-" + "matización".
+---------------------------------------------------------------- */
+.cdo-hero-headline,
+.cdo-section-headline,
+.cdo-cta-headline {
+    hyphens: none;
+    -webkit-hyphens: none;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+/* ----------------------------------------------------------------
+   Mobile typography polish
+---------------------------------------------------------------- */
+@media (max-width: 640px) {
+    /* Tighter hero on small screens, the desktop sizes overflow */
+    .cdo-hero-headline { font-size: clamp(2rem, 9vw, 3rem) !important; line-height: 1.05 !important; }
+    .cdo-section-headline { font-size: clamp(1.85rem, 7.5vw, 2.75rem) !important; }
+    .cdo-cta-headline { font-size: clamp(1.65rem, 7vw, 2.25rem) !important; }
+    /* Hero: no min-height, smaller padding — nav already eats top space */
+    .cdo-hero {
+        min-height: auto !important;
+        padding-bottom: 2.5rem !important;
+    }
+    /* Hide the absolute floating cards on small screens — they overlap badly */
+    .cdo-hero-floats { display: none !important; }
+    /* Round the dark CTA banner less aggressively + reduce vertical padding */
+    .cdo-cta-banner { margin-left: 1rem; margin-right: 1rem; padding: 2.25rem 1.25rem; border-radius: 1.25rem; }
+    /* Reduce section vertical padding on the most common patterns */
+    .cdo-legal-content { font-size: 0.9375rem; }
+
+    /* Blobs decorativos: más pequeños y tenues en móvil — y sin animación
+       (evita compute extra y respeta el espacio reducido). El opacity()
+       del filter se MULTIPLICA con la opacidad inline (mantiene la
+       jerarquía visual entre blobs sin uniformarlos). */
+    .cdo-blob {
+        animation: none !important;
+        transform: scale(0.55);
+        filter: blur(45px) opacity(0.55) !important;
+    }
+}
+
+/* ----------------------------------------------------------------
+   Main container — ensures it doesn't create a transformed/contained
+   parent that would break the sticky nav inside <body>.
+---------------------------------------------------------------- */
+#cdo-main {
+    position: relative;
+    z-index: 0;
+}
+
+/* ----------------------------------------------------------------
+   Pricing slider — usado en la calculadora de /software/
+---------------------------------------------------------------- */
+.cdo-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--cdo-surface-highest);
+    outline: none;
+    cursor: pointer;
+}
+.cdo-slider:focus { outline: none; }
+
+/* WebKit (Chrome / Safari / Edge) */
+.cdo-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--cdo-primary-container);
+    border: 2px solid #000;
+    cursor: grab;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.cdo-slider::-webkit-slider-thumb:hover  { transform: scale(1.1); }
+.cdo-slider::-webkit-slider-thumb:active { transform: scale(1.15); cursor: grabbing; }
+
+/* Firefox */
+.cdo-slider::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--cdo-surface-highest);
+}
+.cdo-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--cdo-primary-container);
+    border: 2px solid #000;
+    cursor: grab;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s ease;
+}
+.cdo-slider::-moz-range-thumb:hover  { transform: scale(1.1); }
+.cdo-slider::-moz-range-thumb:active { transform: scale(1.15); cursor: grabbing; }
+
+/* ----------------------------------------------------------------
+   Legal pages typography — for HTML emitted by Adapta RGPD and
+   similar generators. We don't load @tailwindcss/typography to keep
+   the bundle lean, so we style the raw semantic markup ourselves
+   in the brand voice (Plus Jakarta Sans + Inter, lime accents).
+---------------------------------------------------------------- */
+.cdo-legal-content {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--cdo-secondary);
+    max-width: 70ch;
+}
+.cdo-legal-content > * + * { margin-top: 1.25rem; }
+
+.cdo-legal-content h2 {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.5rem, 3.5vw, 1.875rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--cdo-on-surface);
+    margin-top: 3.5rem;
+    margin-bottom: .25rem;
+    position: relative;
+    padding-left: 1.25rem;
+    scroll-margin-top: 6rem;
+}
+.cdo-legal-content h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: .55em;
+    width: 4px;
+    height: 1.4rem;
+    background: var(--cdo-primary-container);
+    border-radius: 2px;
+}
+.cdo-legal-content h2:first-child { margin-top: 0; }
+
+.cdo-legal-content h3 {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    color: var(--cdo-on-surface);
+    margin-top: 2rem;
+    margin-bottom: .5rem;
+}
+
+.cdo-legal-content p {
+    color: var(--cdo-secondary);
+}
+
+.cdo-legal-content strong,
+.cdo-legal-content b {
+    color: var(--cdo-on-surface);
+    font-weight: 600;
+}
+
+.cdo-legal-content em,
+.cdo-legal-content i { font-style: italic; }
+
+.cdo-legal-content ul,
+.cdo-legal-content ol {
+    padding-left: 1.5rem;
+    margin-top: 1rem;
+}
+.cdo-legal-content ul { list-style: none; }
+.cdo-legal-content ul > li { position: relative; padding-left: 1rem; }
+.cdo-legal-content ul > li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: .65em;
+    width: .375rem;
+    height: .375rem;
+    background: var(--cdo-primary-container);
+    border-radius: 999px;
+}
+.cdo-legal-content ol { list-style: decimal; }
+.cdo-legal-content ol > li::marker { color: var(--cdo-primary); font-weight: 600; }
+.cdo-legal-content li + li { margin-top: .5rem; }
+.cdo-legal-content li > p { margin-top: .5rem; }
+
+.cdo-legal-content a {
+    color: var(--cdo-on-surface);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--cdo-primary-container);
+    font-weight: 500;
+    transition: color .2s ease, text-decoration-color .2s ease;
+    word-break: break-word;
+}
+.cdo-legal-content a:hover {
+    color: var(--cdo-primary);
+    text-decoration-color: var(--cdo-primary);
+}
+
+.cdo-legal-content blockquote {
+    border-left: 3px solid var(--cdo-primary-container);
+    background: var(--cdo-surface-low);
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    border-radius: 0 .5rem .5rem 0;
+    color: var(--cdo-on-surface);
+}
+
+.cdo-legal-content code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--cdo-surface-low);
+    padding: .15em .4em;
+    border-radius: .25rem;
+    font-size: .875em;
+    color: var(--cdo-on-surface);
+}
+
+.cdo-legal-content pre {
+    background: var(--cdo-on-surface);
+    color: #fff;
+    padding: 1rem 1.25rem;
+    border-radius: .75rem;
+    overflow-x: auto;
+    font-size: .875rem;
+}
+.cdo-legal-content pre code { background: transparent; padding: 0; color: inherit; }
+
+.cdo-legal-content hr {
+    border: 0;
+    border-top: 1px solid var(--cdo-surface-highest);
+    margin: 2.5rem 0;
+}
+
+.cdo-legal-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: .9rem;
+}
+.cdo-legal-content th,
+.cdo-legal-content td {
+    border-bottom: 1px solid var(--cdo-surface-highest);
+    padding: .75rem 1rem;
+    text-align: left;
+    vertical-align: top;
+}
+.cdo-legal-content th {
+    background: var(--cdo-surface-low);
+    color: var(--cdo-on-surface);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-size: .75rem;
+}
+
+/* ----------------------------------------------------------------
+   Adapta RGPD — cookie banner brand override.
+   El plugin pone #cookies-eu-banner como barra fixed full-width gris.
+   La convertimos en tarjeta flotante centrada con icono y glow lima.
+---------------------------------------------------------------- */
+
+/* Reset del wrapper exterior — solo lo dejamos como contenedor */
+#cookies-eu-wrapper {
+    background: transparent !important;
+    color: inherit !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Tarjeta flotante real */
+#cookies-eu-banner {
+    position: fixed !important;
+    bottom: 1.25rem !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    width: auto !important;
+    max-width: 1080px !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    z-index: 999999 !important;
+
+    background: #000 !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    border: 1px solid rgba(216, 253, 80, 0.25) !important;
+    border-radius: 1rem !important;
+    box-shadow:
+        0 24px 48px -12px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 0 60px -10px rgba(216, 253, 80, 0.15) !important;
+
+    padding: 1.25rem 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1.25rem !important;
+    flex-wrap: nowrap !important;
+    text-align: left !important;
+
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: .8125rem !important;
+    line-height: 1.55 !important;
+
+    animation: cdo-banner-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.3s;
+}
+
+@keyframes cdo-banner-in {
+    from { opacity: 0; transform: translateY(32px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Icono cookie a la izquierda */
+#cookies-eu-banner::before {
+    content: 'cookie' !important;
+    font-family: 'Material Symbols Outlined' !important;
+    font-size: 2.25rem !important;
+    line-height: 1 !important;
+    color: var(--cdo-primary-container) !important;
+    flex-shrink: 0 !important;
+    text-shadow: 0 0 24px rgba(216, 253, 80, 0.5) !important;
+    animation: cdo-cookie-wobble 4s ease-in-out infinite !important;
+}
+@keyframes cdo-cookie-wobble {
+    0%, 100% { transform: rotate(0deg); }
+    25%      { transform: rotate(-6deg); }
+    75%      { transform: rotate(6deg); }
+}
+
+#cookies-eu-label {
+    flex: 1 1 auto !important;
+    color: rgba(255, 255, 255, 0.82) !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: .8125rem !important;
+    line-height: 1.55 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#cookies-eu-more,
+.argpd-cookies-politica {
+    color: var(--cdo-primary-container) !important;
+    text-decoration: underline !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 3px !important;
+    font-weight: 600 !important;
+    transition: color .2s ease, opacity .2s ease !important;
+    white-space: nowrap !important;
+}
+#cookies-eu-more:hover,
+.argpd-cookies-politica:hover { opacity: .75 !important; }
+
+#cookies-eu-buttons {
+    display: flex !important;
+    gap: .625rem !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+}
+
+/* Botones — el plugin los pone azul #0080ff con padding:20px y margin:8px 6px.
+   Usamos selectores con #cookies-eu-banner padre para ganar especificidad. */
+#cookies-eu-banner #cookies-eu-reject,
+#cookies-eu-banner #cookies-eu-accept,
+#cookies-eu-banner .cookies-eu-reject,
+#cookies-eu-banner .cookies-eu-accept {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+    font-weight: 700 !important;
+    font-size: .7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: .12em !important;
+    padding: .8rem 1.5rem !important;
+    margin: 0 !important;
+    border-radius: .625rem !important;
+    cursor: pointer !important;
+    transition: transform .18s ease, background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .25s ease !important;
+    border: 1.5px solid transparent !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    text-decoration: none !important;
+}
+
+#cookies-eu-banner #cookies-eu-reject,
+#cookies-eu-banner .cookies-eu-reject {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+#cookies-eu-banner #cookies-eu-reject:hover,
+#cookies-eu-banner .cookies-eu-reject:hover {
+    border-color: var(--cdo-primary-container) !important;
+    color: var(--cdo-primary-container) !important;
+    background-color: rgba(216, 253, 80, 0.05) !important;
+    transform: translateY(-1px) !important;
+}
+
+#cookies-eu-banner #cookies-eu-accept,
+#cookies-eu-banner .cookies-eu-accept {
+    background: var(--cdo-primary-container) !important;
+    background-color: var(--cdo-primary-container) !important;
+    color: var(--cdo-on-primary-fixed) !important;
+    border-color: var(--cdo-primary-container) !important;
+    box-shadow: 0 6px 18px rgba(216, 253, 80, 0.25) !important;
+}
+#cookies-eu-banner #cookies-eu-accept:hover,
+#cookies-eu-banner .cookies-eu-accept:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 28px rgba(216, 253, 80, 0.45) !important;
+}
+#cookies-eu-banner #cookies-eu-accept:active,
+#cookies-eu-banner .cookies-eu-accept:active { transform: translateY(0) !important; }
+
+/* Más información link dentro del banner */
+#cookies-eu-banner #cookies-eu-more,
+#cookies-eu-banner .argpd-cookies-politica {
+    color: var(--cdo-primary-container) !important;
+    padding-right: 0 !important;
+    text-decoration: underline !important;
+    font-weight: 600 !important;
+}
+
+/* Móvil: tarjeta apilada vertical, icono arriba, botones full-width */
+@media (max-width: 720px) {
+    #cookies-eu-banner {
+        bottom: .75rem !important;
+        left: .75rem !important;
+        right: .75rem !important;
+        padding: 1.25rem !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        text-align: center !important;
+        gap: 1rem !important;
+    }
+    #cookies-eu-banner::before { align-self: center !important; font-size: 2.5rem !important; }
+    #cookies-eu-buttons { width: 100% !important; }
+    #cookies-eu-banner #cookies-eu-buttons button { flex: 1 1 0 !important; }
+}
+
+/* Botón flotante "Volver a abrir banner" (estado cerrado).
+   IMPORTANTE: NO tocamos `display` para que el plugin pueda seguir toggleando
+   show/hide. Forzamos right:auto, width:auto y min-height:0 para anular
+   el `right:0; min-height:60px` del plugin que estiraba el botón. */
+#cookies-eu-banner-closed {
+    position: fixed !important;
+    bottom: 1.25rem !important;
+    left: 1.25rem !important;
+    right: auto !important;
+    top: auto !important;
+    width: auto !important;
+    min-height: 0 !important;
+
+    background: #000 !important;
+    background-color: #000 !important;
+    color: var(--cdo-primary-container) !important;
+    border: 1px solid rgba(216, 253, 80, 0.4) !important;
+    border-radius: 999px !important;
+    padding: .75rem 1rem !important;
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.25),
+        0 0 30px -8px rgba(216, 253, 80, 0.4) !important;
+    transition: transform .2s ease, box-shadow .25s ease !important;
+    cursor: pointer !important;
+    z-index: 999999 !important;
+
+    /* font-size:0 oculta el texto que mete el plugin; el icono lo añadimos
+       en ::before con su propio font-size */
+    font-size: 0 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+}
+#cookies-eu-banner-closed::before {
+    content: 'cookie' !important;
+    font-family: 'Material Symbols Outlined' !important;
+    font-size: 1.5rem !important;
+    line-height: 1 !important;
+    color: var(--cdo-primary-container) !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+#cookies-eu-banner-closed:hover {
+    transform: scale(1.06) !important;
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.35),
+        0 0 40px -8px rgba(216, 253, 80, 0.6) !important;
+}
+/* Anular el span con border-bottom que añade el plugin */
+#cookies-eu-banner-closed span {
+    border: 0 !important;
+    font-size: 0 !important;
+}
+
+/* ----------------------------------------------------------------
+   Adapta RGPD — "Personalizar cookies" page form
+---------------------------------------------------------------- */
+.cdo-legal-content input[type="submit"],
+.cdo-legal-content button[type="submit"],
+.cdo-legal-content .button,
+.cdo-legal-content button:not([class*="cookies-eu"]) {
+    background: var(--cdo-on-surface);
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    padding: .8rem 1.75rem;
+    border-radius: .5rem;
+    border: none;
+    border-bottom: 4px solid var(--cdo-primary-container);
+    cursor: pointer;
+    transition: transform .2s ease, background-color .2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+}
+.cdo-legal-content input[type="submit"]:hover,
+.cdo-legal-content button[type="submit"]:hover,
+.cdo-legal-content .button:hover,
+.cdo-legal-content button:not([class*="cookies-eu"]):hover {
+    transform: translateY(-2px);
+    background: #000;
+}
+
+/* Toggle / checkbox styling for cookie preferences */
+.cdo-legal-content input[type="checkbox"] {
+    accent-color: var(--cdo-primary);
+    width: 1.1rem;
+    height: 1.1rem;
+}
+.cdo-legal-content label {
+    color: var(--cdo-on-surface);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .marquee-animation,
+    .cdo-blob,
+    .cdo-float,
+    .cdo-pulse-dot,
+    .cdo-gradient-shift {
+        animation: none !important;
+    }
+    [data-cdo-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}
+
+/* ----------------------------------------------------------------
+   Minimal WP overrides
+   IMPORTANT: do NOT set overflow on <html> or <body>. Any overflow value
+   different from "visible" on these turns body into the sticky-positioning
+   scroll-ancestor of .cdo-topnav and the nav stops sticking properly on
+   mobile. Each section that has decorative blobs already wraps them in
+   `overflow-hidden`, so horizontal overflow is contained per-section.
+---------------------------------------------------------------- */
+body {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+}
+.skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+    z-index: 9999;
+    background: #000;
+    color: #D8FD50;
+    padding: .75rem 1rem;
+    border-radius: .5rem;
+}
+
+/* The WP admin bar is hidden on the front-end via show_admin_bar filter
+   (functions.php), so no top offset is needed here. */

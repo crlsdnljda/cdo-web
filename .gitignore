@@ -1,0 +1,45 @@
+# Secretos / entorno
+.env
+.env.*.local
+
+# Datos de WordPress (excepto el dump inicial en /db)
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/debug.log
+wp-content/db.php
+
+# Plugins instalados desde el admin (NO el tema)
+wp-content/plugins/*
+!wp-content/plugins/index.php
+
+# Tema: ignoramos solo los temas por defecto de WP
+wp-content/themes/twentytwenty*
+
+# Traducciones de WP — se regeneran solas
+wp-content/languages/
+
+# Archivos placeholder de WP que se regeneran solos
+wp-content/index.php
+
+# Mu-plugins (no usamos ninguno, si los hubiera ignorar excepto los nuestros)
+wp-content/mu-plugins/
+
+# Logs
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Stitch / pruebas / temporales
+stitch-export/
+*.zip.bak
