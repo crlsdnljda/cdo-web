@@ -108,6 +108,10 @@ function cdo_organization_schema() {
     if ( $printed ) { return; }
     $printed = true;
 
+    // Logo desde el site_icon de WordPress (lo definió el usuario).
+    // Schema.org recomienda tamaño mínimo 112×112; site_icon es 512×512.
+    $logo_url = function_exists( 'get_site_icon_url' ) ? get_site_icon_url( 512 ) : '';
+
     $org = array(
         '@context'      => 'https://schema.org',
         '@type'         => 'Organization',
@@ -117,6 +121,8 @@ function cdo_organization_schema() {
         'legalName'     => 'cdo.solutions',
         'description'   => __( 'Centro de Desarrollo Online — Software propio y servicios integrales para empresas omnicanal con tienda online y tiendas físicas. Cobertura España y mercado europeo; soporte presencial en Gipuzkoa y transporte local en País Vasco.', 'cdo-solutions' ),
         'url'           => home_url( '/' ),
+        'logo'          => $logo_url ?: home_url( '/' ),
+        'image'         => $logo_url ?: home_url( '/' ),
         'inLanguage'    => 'es',
         'founder'       => array(
             '@type' => 'Person',
@@ -135,7 +141,7 @@ function cdo_organization_schema() {
             '@type'             => 'ContactPoint',
             'contactType'       => 'customer support',
             'url'               => home_url( '/contacto/' ),
-            'availableLanguage' => array( 'Spanish' ),
+            'availableLanguage' => array( 'es' ),
             'areaServed'        => 'EU',
         ),
         'knowsAbout'    => array(
