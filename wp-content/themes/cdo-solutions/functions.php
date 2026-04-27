@@ -19,6 +19,7 @@ require_once get_template_directory() . '/inc/cpt-solucion.php';
 require_once get_template_directory() . '/inc/contact-form.php';
 require_once get_template_directory() . '/inc/seo.php';
 require_once get_template_directory() . '/inc/admin-restrict.php';
+require_once get_template_directory() . '/inc/gtm.php';
 
 /**
  * Theme support + menus.
